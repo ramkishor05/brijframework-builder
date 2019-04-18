@@ -2,19 +2,19 @@ package org.brijframework.builder;
 
 import static com.sun.codemodel.ClassType.CLASS;
 import static com.sun.codemodel.ClassType.ENUM;
-import static org.brijframework.builder.util.Constants.ANNO_KEY;
-import static org.brijframework.builder.util.Constants.ARG_KEY;
-import static org.brijframework.builder.util.Constants.CONSTR_KEY;
-import static org.brijframework.builder.util.Constants.EXTEND_KEY;
-import static org.brijframework.builder.util.Constants.FIELD_KEY;
-import static org.brijframework.builder.util.Constants.GETTER_KEY;
-import static org.brijframework.builder.util.Constants.IMPLS_KEY;
-import static org.brijframework.builder.util.Constants.LOGIC_KEY;
-import static org.brijframework.builder.util.Constants.MODIFIER_KEY;
-import static org.brijframework.builder.util.Constants.NAME_KEY;
-import static org.brijframework.builder.util.Constants.PARAM_KEY;
-import static org.brijframework.builder.util.Constants.SETTER_KEY;
-import static org.brijframework.builder.util.Constants.TYPE_KEY;
+import static org.brijframework.builder.util.BuilderConstants.ANNO_KEY;
+import static org.brijframework.builder.util.BuilderConstants.ARG_KEY;
+import static org.brijframework.builder.util.BuilderConstants.CONSTR_KEY;
+import static org.brijframework.builder.util.BuilderConstants.EXTEND_KEY;
+import static org.brijframework.builder.util.BuilderConstants.FIELD_KEY;
+import static org.brijframework.builder.util.BuilderConstants.GETTER_KEY;
+import static org.brijframework.builder.util.BuilderConstants.IMPLS_KEY;
+import static org.brijframework.builder.util.BuilderConstants.LOGIC_KEY;
+import static org.brijframework.builder.util.BuilderConstants.MODIFIER_KEY;
+import static org.brijframework.builder.util.BuilderConstants.NAME_KEY;
+import static org.brijframework.builder.util.BuilderConstants.PARAM_KEY;
+import static org.brijframework.builder.util.BuilderConstants.SETTER_KEY;
+import static org.brijframework.builder.util.BuilderConstants.TYPE_KEY;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,8 +33,8 @@ import java.util.logging.Logger;
 import org.brijframework.builder.factories.AnnotationMapperFactory;
 import org.brijframework.builder.factories.ModifierMapperFactory;
 import org.brijframework.builder.factories.TypeMapperFactory;
-import org.brijframework.builder.util.JSONUtil;
-import org.brijframework.builder.util.MapperHelper;
+import org.brijframework.builder.util.ModelCodeMapper;
+import org.brijframework.util.resouces.JSONUtil;
 
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
@@ -49,16 +49,16 @@ import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
 
-public class ModelBuilder implements CodeBuilder {
+public class ModelCodeBuilder implements CodeBuilder {
 
-	private static Logger logger = Logger.getLogger(ModelBuilder.class.getName());
+	private static Logger logger = Logger.getLogger(ModelCodeBuilder.class.getName());
 	private File sourcePath;
 
 	private Map<String, Object> clsMap = new HashMap<>();
 	private File codebase;
 	private JCodeModel codeModel = new JCodeModel();
 
-	public ModelBuilder() {
+	public ModelCodeBuilder() {
 		this.codebase = new File("src/main/java/");
 		if (!codebase.exists()) {
 			this.codebase = new File("src/");
@@ -68,11 +68,11 @@ public class ModelBuilder implements CodeBuilder {
 		}
 	}
 
-	public ModelBuilder(String sourcePath) {
+	public ModelCodeBuilder(String sourcePath) {
 		this(new File(sourcePath));
 	}
 
-	public ModelBuilder(File sourcePath) {
+	public ModelCodeBuilder(File sourcePath) {
 		this();
 		this.sourcePath = sourcePath;
 		this.init();
@@ -394,7 +394,7 @@ public class ModelBuilder implements CodeBuilder {
 		}
 		paramMap.put(TYPE_KEY, setterMap.get(TYPE_KEY) == null ? type.getSimpleName() : setterMap.get(TYPE_KEY));
 		paramMap.put(ARG_KEY, setterMap.get(ARG_KEY) == null ? mdlField.name() : setterMap.get(ARG_KEY));
-		JMethod mdlMethod = mdlCls.method(JMod.PUBLIC, mdlCls.owner().VOID, MapperHelper.getSetterKey(mdlField.name()));
+		JMethod mdlMethod = mdlCls.method(JMod.PUBLIC, mdlCls.owner().VOID, ModelCodeMapper.getSetterKey(mdlField.name()));
 		addParam(mdlMethod, paramMap);
 		loadAnnotations(mdlMethod, getAnnotations(setterMap));
 		loadParams(mdlMethod, getParams(setterMap));
@@ -409,7 +409,7 @@ public class ModelBuilder implements CodeBuilder {
 			logger.log(Level.SEVERE, msg);
 			return;
 		}
-		JMethod mdlMethod = mdlCls.method(JMod.PUBLIC, mdlField.type(), MapperHelper.getGetterKey(type, mdlField.name()));
+		JMethod mdlMethod = mdlCls.method(JMod.PUBLIC, mdlField.type(), ModelCodeMapper.getGetterKey(type, mdlField.name()));
 		loadAnnotations(mdlMethod, getAnnotations(getterMap));
 		loadParams(mdlMethod, getParams(getterMap));
 		mdlMethod.body()._return(mdlField);
@@ -511,7 +511,7 @@ public class ModelBuilder implements CodeBuilder {
 		if (params != null) {
 			params.forEach((key, value) -> {
 				try {
-					value = MapperHelper.castValue(annoType.getDeclaredMethod(key).getReturnType(), value);
+					value = ModelCodeMapper.castValue(annoType.getDeclaredMethod(key).getReturnType(), value);
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, e.getMessage());
 				}
@@ -539,7 +539,7 @@ public class ModelBuilder implements CodeBuilder {
 	private void addParamArray(JAnnotationUse annotationUse, String key, Object[] paramArray) {
 		JAnnotationArrayMember arrayMember = annotationUse.paramArray(key);
 		for (Object paramValue : paramArray) {
-			paramValue = MapperHelper.castValue(String.class, paramValue);
+			paramValue = ModelCodeMapper.castValue(String.class, paramValue);
 			if (paramValue instanceof String) {
 				arrayMember.param((String) paramValue);
 			} else if (paramValue instanceof Integer) {

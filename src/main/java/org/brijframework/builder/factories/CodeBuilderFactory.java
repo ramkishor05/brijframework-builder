@@ -5,11 +5,11 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.brijframework.builder.ModelBuilder;
+import org.brijframework.builder.ModelCodeBuilder;
 
 public class CodeBuilderFactory {
 	private static CodeBuilderFactory factory;
-	private static Logger logger = Logger.getLogger(ModelBuilder.class.getName());
+	private static Logger logger = Logger.getLogger(ModelCodeBuilder.class.getName());
 	private CodeBuilderFactory() {
 	}
 
@@ -34,7 +34,7 @@ public class CodeBuilderFactory {
 
 	private void load(File path) {
 		try {
-			new ModelBuilder(path).build();
+			new ModelCodeBuilder(path).build();
 		} catch (Exception e) {
 			logger.log(Level.ALL, e.getMessage(), e);
 		}

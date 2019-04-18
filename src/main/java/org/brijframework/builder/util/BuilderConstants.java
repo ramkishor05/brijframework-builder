@@ -1,5 +1,5 @@
 package org.brijframework.builder.util;
-public class Constants {
+public class BuilderConstants {
 	public static final String CLASS_KEY = "class";
 
 	public static final String EXTEND_KEY = "extend";

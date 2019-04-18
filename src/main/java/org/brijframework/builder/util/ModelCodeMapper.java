@@ -1,7 +1,7 @@
 package org.brijframework.builder.util;
 
-public final class MapperHelper {
-	private MapperHelper() {
+public final class ModelCodeMapper {
+	private ModelCodeMapper() {
 	}
 	public static String getSetterKey(String key) {
 		return "set" + key.replace(key.charAt(0), Character.toUpperCase(key.charAt(0)));

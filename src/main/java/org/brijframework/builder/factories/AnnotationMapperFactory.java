@@ -25,12 +25,12 @@ public class AnnotationMapperFactory {
 	}
 	
 	public void loadFactory(){
-		this.registerAnnotationMapper("@Property", "org.brijframework.builder.annotation.Property");
-		this.registerAnnotationMapper("@property", "org.brijframework.builder.annotation.Property");
-		this.registerAnnotationMapper("com.catamaran.briovarx.annotations.Property","org.brijframework.builder.annotation.Property");
-		this.registerAnnotationMapper("@model","org.brijframework.builder.annotation.Model");
-		this.registerAnnotationMapper("@Model", "org.brijframework.builder.annotation.Model");
-		this.registerAnnotationMapper("com.catamaran.briovarx.annotations.Model","org.brijframework.builder.annotation.Model");
+		this.registerAnnotationMapper("@Property", "org.brijframework.support.model.Property");
+		this.registerAnnotationMapper("@property", "org.brijframework.support.model.Property");
+		this.registerAnnotationMapper("com.catamaran.briovarx.annotations.Property","org.brijframework.support.model.Property");
+		this.registerAnnotationMapper("@model","org.brijframework.support.model.Model");
+		this.registerAnnotationMapper("@Model", "org.brijframework.support.model.Model");
+		this.registerAnnotationMapper("com.catamaran.briovarx.annotations.Model","org.brijframework.support.model.Model");
 	}
 	
 	public void registerAnnotationMapper(String key, Class<? extends Annotation> value) {
