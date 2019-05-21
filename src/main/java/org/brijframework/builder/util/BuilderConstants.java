@@ -2,7 +2,7 @@ package org.brijframework.builder.util;
 public class BuilderConstants {
 	public static final String CLASS_KEY = "class";
 
-	public static final String EXTEND_KEY = "extend";
+	public static final String EXTEND_KEY = "extends";
 
 	public static final String IMPLS_KEY = "implements";
 
@@ -35,4 +35,8 @@ public class BuilderConstants {
 	public static final String SETTER_KEY = "setter";
 
 	public static final String GETTER_KEY = "getter";
+	
+	public static final String HASH_KEY = "hash";
+	
+	public static final String TO_STRING_KEY = "toString";
 }

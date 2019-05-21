@@ -1,4 +1,4 @@
-package org.brijframework.builder.factories;
+package org.brijframework.builder.factories.mapper;
 
 import java.sql.Time;
 import java.util.Date;
@@ -8,18 +8,19 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TypeMapperFactory {
-	private static Logger logger = Logger.getLogger(TypeMapperFactory.class.getName());
+public class DefaultTypeFactory {
+	private static Logger logger = Logger.getLogger(DefaultTypeFactory.class.getName());
 	private Map<String, Class<?>> typeMapper = new HashMap<>();
 	private static Map<Class<?>, Class<?>[]> asmMapper = new HashMap<>();
-	private static TypeMapperFactory factory;
+	
+	private static DefaultTypeFactory factory;
 
-	private TypeMapperFactory() {
+	private DefaultTypeFactory() {
 	}
 
-	public static TypeMapperFactory getFactory() {
+	public static DefaultTypeFactory getFactory() {
 		if (factory == null) {
-			factory = new TypeMapperFactory();
+			factory = new DefaultTypeFactory();
 			factory.loadFactory();
 		}
 		return factory;

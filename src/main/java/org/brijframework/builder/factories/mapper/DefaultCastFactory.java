@@ -1,21 +1,21 @@
-package org.brijframework.builder.factories;
+package org.brijframework.builder.factories.mapper;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CastMapperFactory {
+public class DefaultCastFactory {
 
-	private static CastMapperFactory factory;
+	private static DefaultCastFactory factory;
 //	private static Logger logger = Logger.getLogger(AnnotationMapperFactory.class.getName());
 	
 	private static Map<Class<?>, Class<?>[]> castMapper = new HashMap<>();
 	
-	private CastMapperFactory() {
+	private DefaultCastFactory() {
 	}
 
-	public static CastMapperFactory getFactory() {
+	public static DefaultCastFactory getFactory() {
 		if (factory == null) {
-			factory = new CastMapperFactory();
+			factory = new DefaultCastFactory();
 			factory.loadFactory();
 		}
 		return factory;
