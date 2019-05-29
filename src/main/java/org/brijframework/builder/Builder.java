@@ -2,7 +2,7 @@ package org.brijframework.builder;
 
 import java.io.File;
 
-public interface CodeBuilder {
+public interface Builder {
 
 	void build();
 	

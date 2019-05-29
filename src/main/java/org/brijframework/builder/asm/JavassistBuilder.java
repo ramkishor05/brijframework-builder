@@ -1,22 +1,16 @@
-package org.brijframework.builder;
+package org.brijframework.builder.asm;
 
-import static com.sun.codemodel.ClassType.ANNOTATION_TYPE_DECL;
-import static com.sun.codemodel.ClassType.CLASS;
-import static com.sun.codemodel.ClassType.ENUM;
-import static com.sun.codemodel.ClassType.INTERFACE;
 import static org.brijframework.builder.util.BuilderConstants.ANNO_KEY;
 import static org.brijframework.builder.util.BuilderConstants.ARG_KEY;
 import static org.brijframework.builder.util.BuilderConstants.CONSTR_KEY;
 import static org.brijframework.builder.util.BuilderConstants.EXTEND_KEY;
 import static org.brijframework.builder.util.BuilderConstants.FIELD_KEY;
-import static org.brijframework.builder.util.BuilderConstants.GETTER_KEY;
 import static org.brijframework.builder.util.BuilderConstants.HASH_KEY;
 import static org.brijframework.builder.util.BuilderConstants.IMPLS_KEY;
 import static org.brijframework.builder.util.BuilderConstants.LOGIC_KEY;
 import static org.brijframework.builder.util.BuilderConstants.MODIFIER_KEY;
 import static org.brijframework.builder.util.BuilderConstants.NAME_KEY;
 import static org.brijframework.builder.util.BuilderConstants.PARAM_KEY;
-import static org.brijframework.builder.util.BuilderConstants.SETTER_KEY;
 import static org.brijframework.builder.util.BuilderConstants.TO_STRING_KEY;
 import static org.brijframework.builder.util.BuilderConstants.TYPE_KEY;
 
@@ -24,6 +18,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +31,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.brijframework.builder.Builder;
 import org.brijframework.builder.factories.mapper.AccessorFactory;
 import org.brijframework.builder.factories.mapper.AnnotationFactory;
 import org.brijframework.builder.factories.mapper.DefaultTypeFactory;
@@ -43,13 +39,10 @@ import org.brijframework.util.accessor.EventValidateUtil;
 import org.brijframework.util.casting.CastingUtil;
 import org.brijframework.util.resouces.JSONUtil;
 
-import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
-import com.sun.codemodel.JClassAlreadyExistsException;
-import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JEnumConstant;
 import com.sun.codemodel.JExpr;
@@ -60,16 +53,21 @@ import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
 
-public class CodeBuilderImpl implements CodeBuilder {
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.NotFoundException;
 
-	private static Logger logger = Logger.getLogger(CodeBuilderImpl.class.getName());
+public class JavassistBuilder implements Builder{
+
+	private static Logger logger = Logger.getLogger(JavaModelBuilder.class.getName());
 	private File sourcePath;
 
 	private Map<String, Object> clsMap = new HashMap<>();
 	private File codebase;
-	private JCodeModel codeModel = new JCodeModel();
+	private javassist.ClassPool codeModel = new javassist.ClassPool();
 
-	public CodeBuilderImpl() {
+	public JavassistBuilder() {
 		this.codebase = new File("src/main/java/");
 		if (!codebase.exists()) {
 			this.codebase = new File("src/");
@@ -79,11 +77,11 @@ public class CodeBuilderImpl implements CodeBuilder {
 		}
 	}
 
-	public CodeBuilderImpl(String sourcePath) {
+	public JavassistBuilder(String sourcePath) {
 		this(new File(sourcePath));
 	}
 
-	public CodeBuilderImpl(File sourcePath) {
+	public JavassistBuilder(File sourcePath) {
 		this();
 		this.sourcePath = sourcePath;
 		this.init();
@@ -121,35 +119,48 @@ public class CodeBuilderImpl implements CodeBuilder {
 			loadProperties(mdlCls, getProperties());
 			loadConstructors(mdlCls, getConstructors());
 		} else if ("class".equalsIgnoreCase(type)) {
-			JDefinedClass mdlCls = getDefinedClass(getNameSource());
-			loadExtendClass(mdlCls, getExtends());
-			loadInterfaces(mdlCls, getImplements());
+			System.out.println(getNameSource());
+			CtClass mdlCls = getDefinedClass(getNameSource());
+			mdlCls.setModifiers(Modifier.PUBLIC);
+			try {
+				System.out.println(mdlCls.toClass());
+			} catch (CannotCompileException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			//loadExtendClass(mdlCls, getExtends());
+			try {
+				mdlCls.writeFile();
+			} catch (NotFoundException | IOException | CannotCompileException e) {
+				e.printStackTrace();
+			}
+			/*loadInterfaces(mdlCls, getImplements());
 			loadProperties(mdlCls, getProperties());
 			loadMethods(mdlCls, getMethodResourceList());
 			loadAnnotations(mdlCls, getAnnotations());
 			loadConstructors(mdlCls, getConstructors());
 			addHashCode(mdlCls, getHashCode());
-			addToString(mdlCls, getToString());
+			addToString(mdlCls, getToString());*/
 		} else if ("interface".equalsIgnoreCase(type)) {
-			JDefinedClass mdlCls = getDefinedInterface(getNameSource());
+			/*JDefinedClass mdlCls = getDefinedInterface(getNameSource());
 			loadExtendClass(mdlCls, getExtends());
 			loadInterfaces(mdlCls, getImplements());
 			loadProperties(mdlCls, getProperties());
 			loadMethods(mdlCls, getMethodResourceList());
-			loadAnnotations(mdlCls, getAnnotations());
+			loadAnnotations(mdlCls, getAnnotations());*/
 		} else if ("@interface".equalsIgnoreCase(type)) {
-			JDefinedClass mdlCls = getDefinedAnnotation(getNameSource());
+			/*JDefinedClass mdlCls = getDefinedAnnotation(getNameSource());
 			loadProperties(mdlCls, getProperties());
 			loadMethods(mdlCls, getMethodResourceList());
-			loadAnnotations(mdlCls, getAnnotations());
+			loadAnnotations(mdlCls, getAnnotations());*/
 		} else {
 			throw new IllegalArgumentException("UNKNOWN SOURCE TYPE");
 		}
-		try {
-			ClassLoader.getSystemClassLoader().loadClass(getNameSource());
+		/*try {
+			//ClassLoader.getSystemClassLoader().loadClass(getNameSource());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	private List<String> getToString() {
@@ -180,14 +191,9 @@ public class CodeBuilderImpl implements CodeBuilder {
 		return null;
 	}
 
-	private JDefinedClass getDefinedAnnotation(String nameSource) {
+	private CtClass getDefinedAnnotation(String nameSource) {
 		Objects.requireNonNull(nameSource, "class name should not be null or empty.");
-		try {
-			return codeModel._class(nameSource, ClassType.ANNOTATION_TYPE_DECL);
-		} catch (JClassAlreadyExistsException e) {
-			logger.log(Level.WARNING, "ClassAlreadyExists", e);
-		}
-		return null;
+		return codeModel.makeInterface(nameSource);
 	}
 
 	private void loadConstructors(JDefinedClass mdlCls, List<Map<String, Object>> constructors) {
@@ -200,7 +206,7 @@ public class CodeBuilderImpl implements CodeBuilder {
 	}
 
 	private void addConstructor(JDefinedClass mdlCls, Map<String, Object> constructorMap) {
-		int mod = AccessorFactory.getFactory().getAccessModifier((String) constructorMap.get(MODIFIER_KEY));
+		/*int mod = AccessorFactory.getFactory().getAccessModifier((String) constructorMap.get(MODIFIER_KEY));
 		JMethod constructor = mdlCls.constructor(mod);
 		List<Map<String, Object>> paramMap = getParams(constructorMap);
 		loadParams(constructor, getParams(constructorMap));
@@ -211,7 +217,7 @@ public class CodeBuilderImpl implements CodeBuilder {
 				addClassField(mdlCls, name, fieldMap);
 				block.assign(JExpr._this().ref(name), JExpr.ref(name));
 			}
-		}
+		}*/
 	}
 
 	private String getTypeSource() {
@@ -221,9 +227,9 @@ public class CodeBuilderImpl implements CodeBuilder {
 	@Override
 	public void build() {
 		try {
-			codeModel.build(codebase);
-		} catch (IOException e) {
-			logger.log(Level.WARNING, "IOException", e);
+			codeModel.insertClassPath(codebase.getAbsolutePath());
+		} catch (NotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -239,53 +245,45 @@ public class CodeBuilderImpl implements CodeBuilder {
 	}
 
 	private JDefinedClass getDefinedEnum(String enm) {
-		Objects.requireNonNull(enm, "class name should not be null or empty.");
+		/*Objects.requireNonNull(enm, "class name should not be null or empty.");
 		try {
-			return codeModel._class(enm, ENUM);
+			return codeModel.makeClass(enm, ENUM);
 		} catch (JClassAlreadyExistsException e) {
 			logger.log(Level.WARNING, "ClassAlreadyExists", e);
-		}
+		}*/
 		return null;
 	}
 
-	private JDefinedClass getDefinedInterface(String cls) {
+	private CtClass getDefinedInterface(String cls) {
 		Objects.requireNonNull(cls, "class name should not be null or empty.");
-		try {
-			return codeModel._class(cls, ClassType.INTERFACE);
-		} catch (JClassAlreadyExistsException e) {
-			logger.log(Level.WARNING, "ClassAlreadyExists", e);
-			return null;
-		}
+		return codeModel.makeInterface(cls);
 	}
 
-	private JDefinedClass getDefinedClass(String cls) {
+	private CtClass getDefinedClass(String cls) {
 		Objects.requireNonNull(cls, "class name should not be null or empty.");
-		try {
-			return codeModel._class(cls);
-		} catch (JClassAlreadyExistsException e) {
-			logger.log(Level.WARNING, "ClassAlreadyExists", e);
-			return null;
-		}
+		CtClass ctClass=codeModel.makeClass(cls);
+		ctClass.defrost();
+		return ctClass;
 	}
 
-	private void loadExtendClass(JDefinedClass mdlCls, String extend) {
+	private void loadExtendClass(CtClass mdlCls, String extend) {
 		if (extend == null) {
 			return;
 		}
 		try {
-			mdlCls._extends(Class.forName(extend));
+			mdlCls.setSuperclass(codeModel.get(extend));
 			Map<String, Object> fieldMap = new HashMap<>();
 			fieldMap.put("access", "PUBLIC_NO_STATIC_FINAL");
 			fieldMap.put("value", "1L");
 			fieldMap.put("type", Long.class.getName());
 			addClassField(mdlCls, "serialVersionUID", fieldMap);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			logger.log(Level.WARNING, "ClassNotFound", e);
 		}
 	}
 
 	private void loadInterfaces(JDefinedClass mdlCls, List<String> implnts) {
-		if (implnts == null) {
+		/*if (implnts == null) {
 			return;
 		}
 		for (String cls : implnts) {
@@ -295,7 +293,7 @@ public class CodeBuilderImpl implements CodeBuilder {
 			fieldMap.put("value", "1");
 			fieldMap.put("type", long.class.getName());
 			addClassField(mdlCls, "serialVersionUID", fieldMap);
-		}
+		}*/
 	}
 
 	private void loadMethods(JDefinedClass mdlCls, Map<String, Map<String, Object>> methodMap) {
@@ -427,7 +425,7 @@ public class CodeBuilderImpl implements CodeBuilder {
 	}
 
 	public void loadProperties(JDefinedClass mdlCls, Map<String, Map<String, Object>> properties) {
-		if (properties == null) {
+		/*if (properties == null) {
 			return;
 		}
 		for (Entry<String, Map<String, Object>> field : properties.entrySet()) {
@@ -443,7 +441,7 @@ public class CodeBuilderImpl implements CodeBuilder {
 			if (mdlCls.getClassType() == ANNOTATION_TYPE_DECL) {
 				this.addClassField(mdlCls, field.getKey(), field.getValue());
 			}
-		}
+		}*/
 	}
 
 	@SuppressWarnings("unchecked")
@@ -462,12 +460,17 @@ public class CodeBuilderImpl implements CodeBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JFieldVar addClassField(JDefinedClass mdlCls, String field, Map<String, Object> fieldMap) {
+	public CtField addClassField(CtClass mdlCls, String field, Map<String, Object> fieldMap) {
 		int mod = AccessorFactory.getFactory().getAccessModifier((String) fieldMap.get(MODIFIER_KEY));
 		Class<?> type = DefaultTypeFactory.getFactory().getTypeMapper((String) fieldMap.get(TYPE_KEY));
-		JFieldVar mdlField = mdlCls.field(mod, type, field);
+		CtField mdlField;
+		try {
+			mdlField = new CtField(codeModel.get(type.getName()), field, mdlCls);
+		} catch (CannotCompileException | NotFoundException e) {
+			e.printStackTrace();
+		}
 		String velue = (String) fieldMap.get("value");
-		if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type))
+		/*if (long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type))
 			mdlField.assign(mdlField.init(JExpr.lit(Long.valueOf(velue))));
 		loadAnnotations(mdlField, getAnnotations(fieldMap));
 		Map<String, Object> setter = (Map<String, Object>) fieldMap.get(SETTER_KEY);
@@ -477,8 +480,8 @@ public class CodeBuilderImpl implements CodeBuilder {
 		Map<String, Object> getter = (Map<String, Object>) fieldMap.get(GETTER_KEY);
 		if (getter != null) {
 			addGetter(mdlCls, mdlField, type, getter);
-		}
-		return mdlField;
+		}*/
+		return null;
 	}
 
 	private void addSetter(JDefinedClass mdlCls, JFieldVar mdlField, Class<?> type, Map<String, Object> setterMap) {
@@ -552,7 +555,7 @@ public class CodeBuilderImpl implements CodeBuilder {
 		}
 	}
 
-	public void loadAnnotations(JFieldVar mdlField, List<Map<String, Object>> annotationMap) {
+	public void loadAnnotations(CtField mdlField, List<Map<String, Object>> annotationMap) {
 		if (annotationMap == null) {
 			return;
 		}
@@ -581,15 +584,14 @@ public class CodeBuilderImpl implements CodeBuilder {
 		buildAnnotation(annotationUse, type, annotationMap);
 	}
 
-	public void addAnnotation(JFieldVar mdlField, String annotation, Map<String, Object> annotationMap) {
-		Class<? extends Annotation> type = AnnotationFactory.getFactory().getAnnotation(annotation);
+	public void addAnnotation(CtField mdlField, String annotation, Map<String, Object> annotationMap) {
+		/*Class<? extends Annotation> type = AnnotationFactory.getFactory().getAnnotation(annotation);
 		if (type == null) {
-			String msg = mdlField.name() + " -> Unable to add annotation on field for " + annotation;
+			String msg = mdlField.getName() + " -> Unable to add annotation on field for " + annotation;
 			logger.log(Level.SEVERE, msg);
 			return;
 		}
-		JAnnotationUse annotationUse = mdlField.annotate(type);
-		buildAnnotation(annotationUse, type, annotationMap);
+		buildAnnotation(annotationUse, type, annotationMap);*/
 	}
 
 	public void addAnnotation(JMethod mdlField, String annotation, Map<String, Object> annotationMap) {
@@ -710,4 +712,5 @@ public class CodeBuilderImpl implements CodeBuilder {
 			hashCode.annotate(Override.class);
 		}
 	}
+
 }
