@@ -163,6 +163,7 @@ public class JavassistBuilder implements Builder{
 		}*/
 	}
 
+	@SuppressWarnings("unused")
 	private List<String> getToString() {
 		return getToString(clsMap);
 	}
@@ -177,6 +178,7 @@ public class JavassistBuilder implements Builder{
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private List<String> getHashCode() {
 		return getHashCode(clsMap);
 	}
@@ -191,6 +193,7 @@ public class JavassistBuilder implements Builder{
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private CtClass getDefinedAnnotation(String nameSource) {
 		Objects.requireNonNull(nameSource, "class name should not be null or empty.");
 		return codeModel.makeInterface(nameSource);
@@ -484,6 +487,7 @@ public class JavassistBuilder implements Builder{
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private void addSetter(JDefinedClass mdlCls, JFieldVar mdlField, Class<?> type, Map<String, Object> setterMap) {
 		Map<String, Object> paramMap = new HashMap<>();
 		Class<?> paramType = DefaultTypeFactory.getFactory().getTypeMapper(
@@ -503,6 +507,7 @@ public class JavassistBuilder implements Builder{
 				JExpr.ref(setterMap.get(ARG_KEY) == null ? mdlField.name() : (String) setterMap.get(ARG_KEY)));
 	}
 
+	@SuppressWarnings("unused")
 	private void addGetter(JDefinedClass mdlCls, JFieldVar mdlField, Class<?> type, Map<String, Object> getterMap) {
 		Class<?> paramType = DefaultTypeFactory.getFactory().getTypeMapper(
 				getterMap.get(TYPE_KEY) == null ? type.getSimpleName() : (String) getterMap.get(TYPE_KEY));
@@ -649,6 +654,7 @@ public class JavassistBuilder implements Builder{
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void addToString(JDefinedClass definedClass, List<String> fieldList) {
 		if (fieldList == null) {
 			return;
