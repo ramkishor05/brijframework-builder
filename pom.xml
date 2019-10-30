@@ -39,6 +39,12 @@
 		
 		<dependency>
 			<groupId>org.brijframework</groupId>
+			<artifactId>brijframework-model</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.brijframework</groupId>
 			<artifactId>brijframework-support</artifactId>
 			<version>0.0.1</version>
 		</dependency>
@@ -61,6 +67,7 @@
 			<artifactId>json</artifactId>
 			<version>20090211</version>
 		</dependency>
+		
 		
 		
 	</dependencies>
